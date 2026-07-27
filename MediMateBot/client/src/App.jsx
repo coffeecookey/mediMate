@@ -20,7 +20,7 @@ function App() {
     setMessages((m) => [...m, { role: "user", text: currentInput }]);
 
     try {
-      const res = await fetch("http://localhost:4000/api/chat", {
+      const res = await fetch("https://medimate-git-562216568812.europe-west1.run.app/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ symptoms: currentInput }),

@@ -33,7 +33,7 @@ const Signup = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:4000/api/auth/signup", {
+      const response = await fetch("https://medimate-git-562216568812.europe-west1.run.app/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password }),
