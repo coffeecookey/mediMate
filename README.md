@@ -83,13 +83,12 @@
 
 ## Architecture
 
-MediMate is composed of **two frontends** and **one unified backend**. The backend used to be three separate Express services (core API, auth, chatbot); they've since been merged into a single Express app mounted under `/api/admin`, `/api/auth`, and `/api/chat`, so there's only one server to run and deploy.
+MediMate is composed of **one frontend** and **one unified backend**. The backend used to be three separate Express services (core API, auth, chatbot); they've since been merged into a single Express app mounted under `/api/admin`, `/api/auth`, and `/api/chat`, so there's only one server to run and deploy. The chatbot UI was likewise a standalone app and is now just a page (`/chatbot`) inside the main frontend.
 
 ```mermaid
 flowchart TB
     subgraph Client["Client Layer"]
-        FE["Main Frontend<br/>React 19 + Vite + Tailwind<br/>:5173"]
-        BOTUI["MediMateBot Client<br/>React + Vite + Framer Motion"]
+        FE["Frontend<br/>React 19 + Vite + Tailwind<br/>:5173"]
     end
 
     subgraph Backend["Backend - Express 5, :4000"]
@@ -112,8 +111,7 @@ flowchart TB
     FE -->|"nearby hospitals/pharmacies"| OSM
     FE -->|"location fallback"| GEO
     FE -->|"SOS location link"| GMAPS
-    FE -. "opens chat" .-> BOTUI
-    BOTUI -->|"POST /api/chat"| CHATR
+    FE -->|"POST /api/chat"| CHATR
     CHATR --> HF
     AUTHR --> MONGO
     ADMIN --> MONGO
@@ -122,8 +120,7 @@ flowchart TB
 
 | Service | Responsibility | Port | Data store |
 |---|---|---|---|
-| **Main Frontend** (`frontend/`) | Home, doctors, booking, dashboard, profile, SOS, map | `5173` | none |
-| **MediMateBot Client** (`MediMateBot/client/`) | Standalone chat UI ("Miffy") | Vite dev port | none |
+| **Frontend** (`frontend/`) | Home, doctors, booking, dashboard, profile, SOS, map, chatbot | `5173` | none |
 | **Backend** (`backend/`) | Doctor/admin data, auth (signup/login), chatbot proxy to Hugging Face | `4000` | MongoDB + Cloudinary |
 
 ---
@@ -135,16 +132,16 @@ flowchart TB
 ```mermaid
 sequenceDiagram
     participant U as User
-    participant Bot as MediMateBot Client
+    participant FE as Frontend (/chatbot)
     participant API as Backend (:4000)
     participant G as Hugging Face Inference API
 
-    U->>Bot: Describe symptoms
-    Bot->>API: POST /api/chat { symptoms }
+    U->>FE: Describe symptoms
+    FE->>API: POST /api/chat { symptoms }
     API->>G: chatCompletion(triage prompt)
     G-->>API: Structured triage text
-    API-->>Bot: { reply }
-    Bot-->>U: Severity, Next Steps, Possible Conditions, Disclaimer
+    API-->>FE: { reply }
+    FE-->>U: Severity, Next Steps, Possible Conditions, Disclaimer
 ```
 
 ### Authentication Flow
@@ -199,10 +196,10 @@ flowchart LR
 
 ```
 untitled folder/
-├── frontend/                 # Main patient-facing app (React + Vite + Tailwind)
-│   ├── src/pages/             # Home, Doctors, Dashboard, Book Appointment, ...
+├── frontend/                 # Patient-facing app (React + Vite + Tailwind)
+│   ├── src/pages/             # Home, Doctors, Dashboard, Book Appointment, Chatbot ("Miffy"), ...
 │   ├── src/authPage/          # Login, Signup
-│   └── src/components/        # NavBar, Header, Footer
+│   └── src/components/        # NavBar, Header, Footer, FloatingShape
 │
 ├── backend/                  # Single unified API (doctors/admin, auth, chatbot)
 │   ├── routes/                 # doctorRoute, authRouter, chatRoute
@@ -210,9 +207,6 @@ untitled folder/
 │   ├── models/                 # doctorModel, userModel, User (auth)
 │   ├── middlewares/            # multer, authValidation, Auth (JWT)
 │   └── config/                 # MongoDB and Cloudinary config
-│
-├── MediMateBot/               # Standalone chat UI ("Miffy"), calls the backend above
-│   └── client/                 # Chat UI (React + Vite + Framer Motion)
 │
 └── MediMate_Team Zenith.pdf   # Project pitch deck
 ```
@@ -227,11 +221,8 @@ Install dependencies for each project:
 # Backend (doctors/admin, auth, chatbot)
 cd backend && npm install
 
-# Main frontend
+# Frontend
 cd frontend && npm install
-
-# Chatbot frontend
-cd MediMateBot/client && npm install
 ```
 
 ---
@@ -258,17 +249,15 @@ HF_MODEL=Qwen/Qwen2.5-7B-Instruct
 | Service | Command | URL |
 |---|---|---|
 | Backend | `cd backend && npm start` | `http://localhost:4000` |
-| Main frontend | `cd frontend && npm run dev` | printed by Vite |
-| Chatbot frontend | `cd MediMateBot/client && npm run dev` | printed by Vite |
+| Frontend | `cd frontend && npm run dev` | printed by Vite |
 
-Open the main frontend's printed local URL in your browser to use MediMate end-to-end.
+Open the frontend's printed local URL in your browser to use MediMate end-to-end.
 
 ---
 
 ## Roadmap
 
 - [ ] Wire the Doctors/Booking pages to live data from the backend (currently mock data)
-- [ ] Complete the standalone `chatbot.jsx` page inside the main frontend (currently opens the bot client in a new tab)
 - [ ] Flesh out the admin dashboard (`adminController`/`adminRoute`) beyond `add-doctor`
 - [ ] Persist appointments, prescriptions, and test reports to MongoDB
 
