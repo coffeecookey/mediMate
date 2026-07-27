@@ -11,13 +11,12 @@ const RefreshHandler = ({ setIsAuthenticated }) => {
     if (localStorage.getItem("token")) {
       setIsAuthenticated(true);
 
-      // Redirect only if on login/signup/root and already authenticated
+      // Redirect only if on login/signup and already authenticated
       if (
-        location.pathname === "/" ||
         location.pathname === "/login" ||
         location.pathname === "/signup"
       ) {
-        navigate("/Dashboard", { replace: false });
+        navigate("/dashboard", { replace: false });
       }
     }
   }, [location, navigate, setIsAuthenticated]);
