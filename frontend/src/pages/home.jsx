@@ -1,8 +1,8 @@
 import React from 'react';
 import Header from '../components/Header';
-import About from './About'
+import About from './about'
 import MapComponent from './MapComponent';
-import Contact from './Contact';
+import Contact from './contact';
 import Footer from '../components/Footer';
 
 const Home = () => {
