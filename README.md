@@ -10,7 +10,7 @@
 [![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![Express](https://img.shields.io/badge/Express_5-000000?style=flat-square&logo=express&logoColor=white)](https://expressjs.com/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=flat-square&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
-[![Gemini API](https://img.shields.io/badge/Google_Gemini_API-8E75B2?style=flat-square&logo=googlegemini&logoColor=white)](https://ai.google.dev/)
+[![Hugging Face](https://img.shields.io/badge/Hugging_Face_Inference-FFD21E?style=flat-square&logo=huggingface&logoColor=black)](https://huggingface.co/docs/inference-providers/index)
 [![Leaflet](https://img.shields.io/badge/Leaflet-199900?style=flat-square&logo=leaflet&logoColor=white)](https://leafletjs.com/)
 
 </div>
@@ -51,7 +51,7 @@
 ## Features
 
 #### AI-Powered Symptom Checker
-- Built on **Google's Gemini API** for natural, context-aware medical conversations
+- Built on **Hugging Face Inference Providers** (open-weight chat models, free tier) for natural, context-aware medical conversations
 - Analyzes user-reported symptoms and always replies in a structured format: **Severity**, **Immediate Need for Attention**, **See a Doctor If**, **Next Steps**, **Possible Conditions**
 - Helps users decide whether they can manage symptoms at home or need to see a professional
 
@@ -101,7 +101,7 @@ flowchart TB
     subgraph Data["Data and External APIs"]
         MONGO[("MongoDB<br/>(users, doctors)")]
         CLOUD["Cloudinary<br/>(doctor images)"]
-        GEMINI["Google Gemini API<br/>(gemini-1.5-flash)"]
+        HF["Hugging Face Inference<br/>(Qwen2.5-7B-Instruct)"]
         OSM["OpenStreetMap /<br/>Overpass API"]
         GEO["IP Geolocation<br/>(ipapi.co)"]
         GMAPS["Google Maps"]
@@ -114,7 +114,7 @@ flowchart TB
     FE -->|"SOS location link"| GMAPS
     FE -. "opens chat" .-> BOTUI
     BOTUI -->|"POST /api/chat"| CHATR
-    CHATR --> GEMINI
+    CHATR --> HF
     AUTHR --> MONGO
     ADMIN --> MONGO
     ADMIN --> CLOUD
@@ -124,7 +124,7 @@ flowchart TB
 |---|---|---|---|
 | **Main Frontend** (`frontend/`) | Home, doctors, booking, dashboard, profile, SOS, map | `5173` | none |
 | **MediMateBot Client** (`MediMateBot/client/`) | Standalone chat UI ("Miffy") | Vite dev port | none |
-| **Backend** (`backend/`) | Doctor/admin data, auth (signup/login), chatbot proxy to Gemini | `4000` | MongoDB + Cloudinary |
+| **Backend** (`backend/`) | Doctor/admin data, auth (signup/login), chatbot proxy to Hugging Face | `4000` | MongoDB + Cloudinary |
 
 ---
 
@@ -137,11 +137,11 @@ sequenceDiagram
     participant U as User
     participant Bot as MediMateBot Client
     participant API as Backend (:4000)
-    participant G as Gemini API
+    participant G as Hugging Face Inference API
 
     U->>Bot: Describe symptoms
     Bot->>API: POST /api/chat { symptoms }
-    API->>G: generateContent(triage prompt)
+    API->>G: chatCompletion(triage prompt)
     G-->>API: Structured triage text
     API-->>Bot: { reply }
     Bot-->>U: Severity, Next Steps, Possible Conditions, Disclaimer
@@ -189,7 +189,7 @@ flowchart LR
 | Layer | Technologies |
 |---|---|
 | **Frontend** | React 19, Vite, Tailwind CSS v4, React Router 7, Framer Motion, React-Leaflet, Axios, React Toastify, lucide-react |
-| **Backend** | Node.js, Express 5, Mongoose, Multer, Cloudinary, JWT, bcrypt, Joi, `@google/generative-ai` (Gemini) |
+| **Backend** | Node.js, Express 5, Mongoose, Multer, Cloudinary, JWT, bcrypt, Joi, `@huggingface/inference` (Hugging Face) |
 | **Database** | MongoDB |
 | **Maps and Geo** | Leaflet, OpenStreetMap, Overpass API, ipapi.co |
 
@@ -247,7 +247,8 @@ JWT_SECRET=your_jwt_secret_key
 CLOUDINARY_NAME=your_cloudinary_name
 CLOUDINARY_API_KEY=your_cloudinary_api_key
 CLOUDINARY_SECRET_KEY=your_cloudinary_secret
-GEMINI_API_KEY=your_google_api_key_here
+HF_TOKEN=your_huggingface_access_token_here
+HF_MODEL=Qwen/Qwen2.5-7B-Instruct
 ```
 
 ---
