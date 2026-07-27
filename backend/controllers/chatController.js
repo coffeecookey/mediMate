@@ -1,16 +1,8 @@
-import express from "express";
-import cors from "cors";
-import dotenv from "dotenv";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-
-dotenv.config();
-const app = express();
-app.use(cors());
-app.use(express.json());
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-app.post("/chat", async (req, res) => {
+export const chat = async (req, res) => {
   const { symptoms } = req.body;
   if (!symptoms) {
     return res.status(400).json({ error: "Symptoms are required" });
@@ -35,6 +27,4 @@ app.post("/chat", async (req, res) => {
     console.error(error);
     res.status(500).json({ error: "Failed to get response from Gemini" });
   }
-});
-
-app.listen(8080, () => console.log("Bot API running on http://localhost:8080"));
+};

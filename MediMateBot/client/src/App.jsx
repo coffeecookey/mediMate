@@ -20,7 +20,7 @@ function App() {
     setMessages((m) => [...m, { role: "user", text: currentInput }]);
 
     try {
-      const res = await fetch("http://localhost:8080/chat", {
+      const res = await fetch("http://localhost:4000/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ symptoms: currentInput }),

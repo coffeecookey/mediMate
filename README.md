@@ -35,7 +35,7 @@
 
 ## What is MediMate?
 
-**MediMate** is an AI-powered medical assistant, built as a multi-service web app that helps users triage symptoms, locate nearby care, and manage their health journey, all through a friendly chatbot interface fronted by **Miffy**, the MediMate jellyfish mascot.
+**MediMate** is an AI-powered medical assistant that helps users triage symptoms, locate nearby care, and manage their health journey, all through a friendly chatbot interface fronted by **Miffy**, the MediMate jellyfish mascot.
 
 <div align="center">
 <table>
@@ -76,14 +76,14 @@
 - One click into the chatbot for a quick symptom check
 
 #### Authentication
-- Dedicated auth microservice with **JWT**-based sessions and **bcrypt**-hashed passwords
+- **JWT**-based sessions and **bcrypt**-hashed passwords, served from the same backend as the rest of the app
 - Protected routes on the frontend redirect unauthenticated users to log in first
 
 ---
 
 ## Architecture
 
-MediMate is composed of **two frontends** and **three independent backend services**, each owning its own concern (auth, core data, AI chat) and talking to its own set of external APIs.
+MediMate is composed of **two frontends** and **one unified backend**. The backend used to be three separate Express services (core API, auth, chatbot); they've since been merged into a single Express app mounted under `/api/admin`, `/api/auth`, and `/api/chat`, so there's only one server to run and deploy.
 
 ```mermaid
 flowchart TB
@@ -92,10 +92,10 @@ flowchart TB
         BOTUI["MediMateBot Client<br/>React + Vite + Framer Motion"]
     end
 
-    subgraph Services["Service Layer"]
-        BE["Main Backend<br/>Express 5 - :4000<br/>Doctors / Admin"]
-        AUTH["Auth Server<br/>Express 5 - :5000<br/>JWT + bcrypt"]
-        BOTAPI["Chatbot Server<br/>Express - :8080<br/>Symptom Triage"]
+    subgraph Backend["Backend - Express 5, :4000"]
+        ADMIN["/api/admin<br/>Doctors / Admin"]
+        AUTHR["/api/auth<br/>JWT + bcrypt"]
+        CHATR["/api/chat<br/>Symptom Triage"]
     end
 
     subgraph Data["Data and External APIs"]
@@ -107,26 +107,24 @@ flowchart TB
         GMAPS["Google Maps"]
     end
 
-    FE -->|"POST /auth/login, /auth/signup"| AUTH
-    FE -->|"doctor and admin data"| BE
+    FE -->|"POST /api/auth/login, /api/auth/signup"| AUTHR
+    FE -->|"doctor and admin data"| ADMIN
     FE -->|"nearby hospitals/pharmacies"| OSM
     FE -->|"location fallback"| GEO
     FE -->|"SOS location link"| GMAPS
     FE -. "opens chat" .-> BOTUI
-    BOTUI -->|"POST /chat"| BOTAPI
-    BOTAPI --> GEMINI
-    AUTH --> MONGO
-    BE --> MONGO
-    BE --> CLOUD
+    BOTUI -->|"POST /api/chat"| CHATR
+    CHATR --> GEMINI
+    AUTHR --> MONGO
+    ADMIN --> MONGO
+    ADMIN --> CLOUD
 ```
 
 | Service | Responsibility | Port | Data store |
 |---|---|---|---|
 | **Main Frontend** (`frontend/`) | Home, doctors, booking, dashboard, profile, SOS, map | `5173` | none |
 | **MediMateBot Client** (`MediMateBot/client/`) | Standalone chat UI ("Miffy") | Vite dev port | none |
-| **Main Backend** (`backend/`) | Doctor/admin data, image uploads | `4000` | MongoDB + Cloudinary |
-| **Auth Server** (`backend/authServer/`) | Signup/login, JWT issuance | `5000` | MongoDB |
-| **Chatbot Server** (`MediMateBot/server/`) | Symptom triage via Gemini | `8080` | none (stateless) |
+| **Backend** (`backend/`) | Doctor/admin data, auth (signup/login), chatbot proxy to Gemini | `4000` | MongoDB + Cloudinary |
 
 ---
 
@@ -138,11 +136,11 @@ flowchart TB
 sequenceDiagram
     participant U as User
     participant Bot as MediMateBot Client
-    participant API as Chatbot Server (:8080)
+    participant API as Backend (:4000)
     participant G as Gemini API
 
     U->>Bot: Describe symptoms
-    Bot->>API: POST /chat { symptoms }
+    Bot->>API: POST /api/chat { symptoms }
     API->>G: generateContent(triage prompt)
     G-->>API: Structured triage text
     API-->>Bot: { reply }
@@ -155,14 +153,14 @@ sequenceDiagram
 sequenceDiagram
     participant U as User
     participant FE as Frontend
-    participant AS as Auth Server (:5000)
+    participant API as Backend (:4000)
     participant DB as MongoDB
 
     U->>FE: Submit signup / login form
-    FE->>AS: POST /auth/signup or /auth/login
-    AS->>DB: Find user, hash (bcrypt) / compare password
-    DB-->>AS: User document
-    AS-->>FE: JWT (24h expiry)
+    FE->>API: POST /api/auth/signup or /api/auth/login
+    API->>DB: Find user, hash (bcrypt) / compare password
+    DB-->>API: User document
+    API-->>FE: JWT (24h expiry)
     FE-->>U: Store token in localStorage, unlock protected routes
 ```
 
@@ -191,9 +189,7 @@ flowchart LR
 | Layer | Technologies |
 |---|---|
 | **Frontend** | React 19, Vite, Tailwind CSS v4, React Router 7, Framer Motion, React-Leaflet, Axios, React Toastify, lucide-react |
-| **Backend (core)** | Node.js, Express 5, Mongoose, Multer, Cloudinary |
-| **Auth Service** | Node.js, Express 5, Mongoose, JWT, bcrypt, Joi |
-| **Chatbot Service** | Node.js, Express, `@google/generative-ai` (Gemini) |
+| **Backend** | Node.js, Express 5, Mongoose, Multer, Cloudinary, JWT, bcrypt, Joi, `@google/generative-ai` (Gemini) |
 | **Database** | MongoDB |
 | **Maps and Geo** | Leaflet, OpenStreetMap, Overpass API, ipapi.co |
 
@@ -208,14 +204,15 @@ untitled folder/
 │   ├── src/authPage/          # Login, Signup
 │   └── src/components/        # NavBar, Header, Footer
 │
-├── backend/                  # Core API (doctors, admin, Cloudinary uploads)
-│   ├── authServer/            # Independent auth microservice (JWT + bcrypt)
-│   ├── controllers/ routes/ models/
-│   └── config/                # MongoDB and Cloudinary config
+├── backend/                  # Single unified API (doctors/admin, auth, chatbot)
+│   ├── routes/                 # doctorRoute, authRouter, chatRoute
+│   ├── controllers/            # adminController, authController, chatController
+│   ├── models/                 # doctorModel, userModel, User (auth)
+│   ├── middlewares/            # multer, authValidation, Auth (JWT)
+│   └── config/                 # MongoDB and Cloudinary config
 │
-├── MediMateBot/               # Standalone AI chatbot ("Miffy")
-│   ├── client/                 # Chat UI (React + Vite + Framer Motion)
-│   └── server/                 # Gemini-powered triage API
+├── MediMateBot/               # Standalone chat UI ("Miffy"), calls the backend above
+│   └── client/                 # Chat UI (React + Vite + Framer Motion)
 │
 └── MediMate_Team Zenith.pdf   # Project pitch deck
 ```
@@ -224,48 +221,33 @@ untitled folder/
 
 ## Getting Started
 
-Install dependencies for each service (they're independent Node projects):
+Install dependencies for each project:
 
 ```bash
-# Chatbot backend
-cd MediMateBot/server && npm install
-
-# Chatbot frontend
-cd MediMateBot/client && npm install
+# Backend (doctors/admin, auth, chatbot)
+cd backend && npm install
 
 # Main frontend
 cd frontend && npm install
 
-# Auth backend
-cd backend/authServer && npm install
-
-# Main backend
-cd backend && npm install
+# Chatbot frontend
+cd MediMateBot/client && npm install
 ```
 
 ---
 
 ## Environment Variables
 
-**`MediMateBot/server/.env`**
-```env
-GEMINI_API_KEY=your_google_api_key_here
-```
+Copy [`backend/env.example`](backend/env.example) to `backend/.env` and fill in real values (all services now share this one file):
 
-**`backend/authServer/.env`**
-```env
-PORT=5000
-MONGO_URI=your_mongoDB_URI
-JWT_SECRET=your_jwt_secret_key
-```
-
-**`backend/.env`**
 ```env
 PORT=4000
 MONGODB_URI=your_mongoDB_URI
+JWT_SECRET=your_jwt_secret_key
 CLOUDINARY_NAME=your_cloudinary_name
 CLOUDINARY_API_KEY=your_cloudinary_api_key
 CLOUDINARY_SECRET_KEY=your_cloudinary_secret
+GEMINI_API_KEY=your_google_api_key_here
 ```
 
 ---
@@ -274,11 +256,9 @@ CLOUDINARY_SECRET_KEY=your_cloudinary_secret
 
 | Service | Command | URL |
 |---|---|---|
-| Chatbot backend | `cd MediMateBot/server && node server.js` | `http://localhost:8080` |
-| Chatbot frontend | `cd MediMateBot/client && npm run dev` | printed by Vite |
+| Backend | `cd backend && npm start` | `http://localhost:4000` |
 | Main frontend | `cd frontend && npm run dev` | printed by Vite |
-| Auth backend | `cd backend/authServer && npm run dev` | `http://localhost:5000` |
-| Main backend | `cd backend && npm start` | `http://localhost:4000` |
+| Chatbot frontend | `cd MediMateBot/client && npm run dev` | printed by Vite |
 
 Open the main frontend's printed local URL in your browser to use MediMate end-to-end.
 
@@ -286,7 +266,7 @@ Open the main frontend's printed local URL in your browser to use MediMate end-t
 
 ## Roadmap
 
-- [ ] Wire the Doctors/Booking pages to live data from the Main Backend (currently mock data)
+- [ ] Wire the Doctors/Booking pages to live data from the backend (currently mock data)
 - [ ] Complete the standalone `chatbot.jsx` page inside the main frontend (currently opens the bot client in a new tab)
 - [ ] Flesh out the admin dashboard (`adminController`/`adminRoute`) beyond `add-doctor`
 - [ ] Persist appointments, prescriptions, and test reports to MongoDB
