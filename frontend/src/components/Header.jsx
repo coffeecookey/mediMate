@@ -1,7 +1,9 @@
 import React from 'react'
+import { useNavigate } from 'react-router-dom';
 import { header_img, rtarrow } from '../assets/assets';
 
 const Header = () => {
+  const navigate = useNavigate();
   return (
     <header className='w-full bg-primary py-12 md:py-16 lg:py-20'>
       <div className=' max-w-7xl mx-auto px-6 md:px-10 lg:px-20'>
@@ -26,7 +28,7 @@ const Header = () => {
               </p>
             </div>
             
-            <button className='group flex items-center gap-3 bg-white text-primary px-8 py-4 rounded-full font-semibold text-sm md:text-base shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 hover:bg-teal-50 animate-slide-in-left animation-delay-600 relative overflow-hidden' onClick={() => window.open("http://localhost:5173")}>
+            <button className='group flex items-center gap-3 bg-white text-primary px-8 py-4 rounded-full font-semibold text-sm md:text-base shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 hover:bg-teal-50 animate-slide-in-left animation-delay-600 relative overflow-hidden' onClick={() => navigate("/chatbot")}>
               <span className='relative text-xl z-10'>Talk to Miffy
               </span>
               <div className='w-7 h-7 bg-primary rounded-full flex items-center justify-center group-hover:bg-teal-700 transition-all duration-300 group-hover: relative z-10'>

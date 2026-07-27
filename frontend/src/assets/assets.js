@@ -12,10 +12,11 @@ import dropdown from './dropdown.png'
 import header_img from './miffybg-semicircle2.png'
 import rtarrow from './rt_arrow.png'
 import miffy2 from './miffy2.png'
+import bot_icon from './miffy-bg.svg'
 
 export const assets = {
-    Medimate1, Medimate2, Medimate3, Medimate4, dropdown, Medimate_bandaid, Medimate_hrt,Medimate1_png, rtarrow, Medimate4_png, pfp_png,miffy2,header_img
+    Medimate1, Medimate2, Medimate3, Medimate4, dropdown, Medimate_bandaid, Medimate_hrt,Medimate1_png, rtarrow, Medimate4_png, pfp_png,miffy2,header_img, bot_icon
 }
 
-export {Medimate1,miffy2,Medimate2,Medimate3,Medimate4, dropdown, Medimate_bandaid,Medimate_hrt,Medimate1_png,Medimate4_png, pfp_png,rtarrow,header_img}
+export {Medimate1,miffy2,Medimate2,Medimate3,Medimate4, dropdown, Medimate_bandaid,Medimate_hrt,Medimate1_png,Medimate4_png, pfp_png,rtarrow,header_img, bot_icon}
 

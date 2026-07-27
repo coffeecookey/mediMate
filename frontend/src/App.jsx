@@ -11,6 +11,7 @@ import NavBar from './components/NavBar';
 import Footer from './components/Footer';
 import LoginToContinue from './pages/Logintocontinue';
 import Dashboard from './pages/dashboard';
+import Chatbot from './pages/chatbot';
 
 import Login from './authPage/Login.jsx';
 import Signup from './authPage/Signup.jsx';
@@ -82,6 +83,7 @@ const App = () => {
         <Route path="/my-profile" element={<Myprofile />} />
         <Route path="/book-appointments" element={<Bookappointment />} />
         <Route path="/redirecting" element={<LoginToContinue />} />
+        <Route path="/chatbot" element={<Chatbot />} />
       </Routes>
 
       <Footer className="sticky bottom-0" />
