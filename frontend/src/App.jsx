@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Route, Routes, Navigate, useLocation } from 'react-router-dom';
-import Home from './pages/Home';
+import Home from './pages/home';
 import Doctors from './pages/Doctors';
-import Contact from './pages/Contact';
+import Contact from './pages/contact';
 import Myprofile from './pages/Myprofile';
-import About from './pages/About';
+import About from './pages/about';
 import Bookappointment from './pages/bookappointment';
 import Myappointments from './pages/Myappointments';
 import NavBar from './components/NavBar';
