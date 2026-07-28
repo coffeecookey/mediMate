@@ -14,6 +14,8 @@
 [![Leaflet](https://img.shields.io/badge/Leaflet-199900?style=flat-square&logo=leaflet&logoColor=white)](https://leafletjs.com/)
 [![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)](https://www.docker.com/)
 [![Vercel](https://img.shields.io/badge/Vercel-000000?style=flat-square&logo=vercel&logoColor=white)](https://vercel.com/)
+[![Google Cloud](https://img.shields.io/badge/-Google%20Cloud%20Platform-4285F4?style=flat&logo=google%20cloud&logoColor=white)](https://cloud.google.com/run?%7B_dsmrktparam%7D=&utm_source=google&utm_medium=cpc&utm_campaign=Cloud-SS-DR-GCP-1713664-GCP-DR-APAC-IN-en-Google-BKWS-BRO-Others&utm_content=c-Hybrid+%7C+BKWS+-+BRO+%7C+Txt+-+AppMod-Serverless-Cloud+Run-IN_en-765571308157&utm_term=google%20cloud%20run&gclsrc=aw.ds&gad_source=1&gad_campaignid=12250799896&gclid=Cj0KCQjwg5zTBhCLARIsAP2AFU4Vg0UoVAMUvTj5_XSUEeAMv7zU_RYB-aaoX4I2cLEgw8rtLAvaKUMaAjs5EALw_wcB)
+
 
 </div>
 
